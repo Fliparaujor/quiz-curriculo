@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz do Currículo</title>
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: uma coluna estreita, uma etapa por vez, barra de progresso fixa no topo; o marca-texto amarelo destaca o que importa, como quem grifa um anúncio de vaga. */
+:root{
+  --bg:#EEF2EF; --surface:#FBFCFB; --ink:#14211D; --muted:#566962; --line:#CBD6D0;
+  --accent:#0E6B5A; --accent-ink:#FFFFFF; --mark:#FFE27A; --mark-ink:#14211D; --soft:#DFE9E4;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1614; --surface:#17211E; --ink:#E7EFEB; --muted:#9BB0A8; --line:#2E3E38;
+    --accent:#58C9B0; --accent-ink:#0B1513; --mark:#6E5A0C; --mark-ink:#FFF4C4; --soft:#1F2C28;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1614; --surface:#17211E; --ink:#E7EFEB; --muted:#9BB0A8; --line:#2E3E38;
+  --accent:#58C9B0; --accent-ink:#0B1513; --mark:#6E5A0C; --mark-ink:#FFF4C4; --soft:#1F2C28;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar-in,.wrap{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar-in{padding-block:12px;display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
+.bar-row b{color:var(--ink);font-weight:600}
+.track{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.fill{height:100%;background:var(--accent);border-radius:3px;transition:width .25s ease}
+@media (prefers-reduced-motion: reduce){.fill{transition:none}}
+.wrap{padding-block:28px 48px;display:flex;flex-direction:column;gap:24px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,7vw,40px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1:focus{outline:none}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 .15em;border-radius:2px}
+.lead{margin:0;color:var(--muted);max-width:60ch}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:20px 16px}
+.f{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.f.half{grid-column:auto}
+@media (max-width:480px){.f.half{grid-column:1/-1}}
+label,.lab{font-weight:600;font-size:16px}
+.hint{font-size:14px;color:var(--muted);margin:0}
+input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:12px 14px;width:100%}
+textarea{min-height:104px;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.item{border:1.5px solid var(--line);border-radius:12px;padding:20px 16px;background:var(--surface);display:flex;flex-direction:column;gap:20px}
+.item input,.item textarea,.item .chip{background:var(--bg)}
+.item .chip[aria-pressed="true"]{background:var(--accent)}
+.item-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.item-head h2{font-family:var(--display);font-size:20px;margin:0}
+.nav{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.btn{font:inherit;font-weight:600;border-radius:10px;padding:13px 22px;cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.link{background:none;border:none;padding:6px 0;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.btn.add{align-self:flex-start;background:transparent;color:var(--accent);border-style:dashed}
+.todo{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.todo li{display:flex;gap:10px;align-items:baseline}
+.todo li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);transform:translateY(-2px)}
+.rev{display:flex;flex-direction:column;gap:14px}
+.rev section{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.rev h2{font-family:var(--display);font-size:19px;margin:0;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.rev p{margin:0;font-size:15px;overflow-wrap:anywhere;white-space:pre-wrap}
+.rev p span{color:var(--muted)}
+.note{border-radius:10px;background:var(--soft);padding:14px 16px;font-size:15px;margin:0}
+.out{font-family:ui-monospace,Consolas,monospace;font-size:13px;min-height:220px}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <div class="bar-row"><span id="where"></span><span id="status" role="status"></span></div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+</div></div>
+<main class="wrap" id="app"></main>
+
+<script>
+const h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){const v=a[k];if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='html')e.innerHTML=v;else e.setAttribute(k,v===true?'':v)}for(const x of c.flat()){if(x==null||x===false)continue;e.append(x.nodeType?x:document.createTextNode(x))}return e};
+
+const NIVEIS=['Não falo','Básico','Intermediário','Avançado','Fluente'];
+const STEPS=[
+ {id:'inicio',nome:'Começo'},
+ {id:'contato',nome:'Contatos',titulo:'Como as empresas <mark>falam com você</mark>?',lead:'É o que vai no topo do currículo. Só o essencial: nada de CPF, RG, endereço completo ou data de nascimento.',fields:[
+  {k:'nome',label:'Nome que você quer no currículo',ph:'Nome e sobrenome'},
+  {k:'cidade',label:'Cidade e estado',ph:'Ex.: Fortaleza/CE',half:1},
+  {k:'telefone',label:'Telefone com DDD',ph:'(00) 00000-0000',type:'tel',half:1},
+  {k:'email',label:'E-mail',ph:'voce@email.com',type:'email'},
+  {k:'linkedin',label:'LinkedIn',hint:'Se não tiver, deixe em branco. Dá para criar depois.',ph:'linkedin.com/in/…'},
+  {k:'link',label:'Outro link que ajude',hint:'Portfólio, Instagram profissional, site.'},
+ ]},
+ {id:'quer',nome:'O que você quer',titulo:'Que trabalho você <mark>quer de verdade</mark>?',lead:'Não precisa ter certeza. Se ainda estiver decidindo, conte do que gosta e do que quer distância.',fields:[
+  {k:'cargos',label:'Dois cargos que você gostaria de ter',kind:'area',ph:'Ex.: Assistente administrativa, Analista de CRM'},
+  {k:'gosta',label:'O que você gosta de fazer no trabalho?',kind:'chips',opts:['Atender pessoas','Organizar e planejar','Vender','Mexer com planilhas e sistemas','Escrever e revisar','Criar conteúdo','Resolver problemas','Cuidar de pessoas','Ensinar','Lidar com números','Trabalho manual','Liderar equipe']},
+  {k:'gostaOutro',label:'Algo que não está na lista?',ph:'Escreva com suas palavras'},
+  {k:'fazBem',label:'Duas coisas que você faz bem',hint:'Aquilo que as pessoas costumam pedir para você fazer.',kind:'area'},
+  {k:'evitar',label:'O que você quer evitar?',kind:'area',ph:'Ex.: trabalhar aos domingos, telemarketing, ficar longe de casa'},
+ ]},
+ {id:'cond',nome:'Condições',titulo:'Onde e <mark>em que condições</mark>?',lead:'Isso serve para filtrar vagas. O valor mínimo fica só entre vocês e não aparece no currículo.',fields:[
+  {k:'modalidade',label:'Como você aceita trabalhar?',kind:'chips',opts:['Presencial','Híbrido','Remoto']},
+  {k:'cidades',label:'Em quais cidades ou bairros dá para ir?',ph:'Ex.: Fortaleza, até 40 min de casa'},
+  {k:'horario',label:'Horários que funcionam',kind:'chips',opts:['Manhã','Tarde','Noite','Horário comercial','Meio período','Fins de semana','Escala']},
+  {k:'contrato',label:'Tipo de contrato',kind:'chips',opts:['CLT','PJ','Estágio','Freelancer','Temporário','Tanto faz']},
+  {k:'minimo',label:'Valor mínimo por mês',hint:'Opcional. Abaixo disso a vaga nem entra na lista.',ph:'R$',half:1},
+  {k:'inicio',label:'Quando pode começar?',ph:'Ex.: imediato, em 30 dias',half:1},
+  {k:'restricoes',label:'Algo que a vaga precisa respeitar?',hint:'Buscar filho na escola, faculdade à noite, não ter carro…',kind:'area'},
+ ]},
+ {id:'exp',nome:'Experiências',titulo:'Tudo o que você <mark>já fez</mark>',lead:'Vale emprego, bico, trabalho autônomo, estágio, voluntariado e negócio da família. Comece pelo mais recente. Frases curtas servem.',repeat:{key:'experiencias',um:'Trabalho',add:'Adicionar outro trabalho',fields:[
+  {k:'empresa',label:'Empresa, cliente ou tipo de trabalho',ph:'Ex.: Loja da família, freelas de…'},
+  {k:'cargo',label:'O que você era lá',ph:'Ex.: Atendente, Assistente administrativa'},
+  {k:'vinculo',label:'Como era o vínculo?',kind:'one',opts:['Carteira assinada','PJ ou autônoma','Estágio','Voluntariado','Negócio da família','Informal']},
+  {k:'de',label:'Começou em',ph:'mês/ano',half:1},
+  {k:'ate',label:'Saiu em',ph:'mês/ano ou “ainda estou”',half:1},
+  {k:'local',label:'Cidade/UF ou remoto'},
+  {k:'atividades',label:'Três coisas que você fazia no dia a dia',kind:'area'},
+  {k:'ferramentas',label:'Ferramentas e sistemas que usava',hint:'E o que você fazia com cada um.',kind:'area',ph:'Ex.: Excel para controlar estoque, WhatsApp Business para atender clientes'},
+  {k:'entrega',label:'Uma tarefa difícil que você resolveu',hint:'O que você fez pessoalmente, para quem, e o que ficou pronto.',kind:'area'},
+  {k:'numeros',label:'Algum número que dê para comprovar?',hint:'Ex.: uns 40 atendimentos por dia. Sem chute: se não souber, deixe em branco.'},
+  {k:'prova',label:'Tem algo que mostre esse trabalho?',hint:'Print, link, certificado, alguém que possa dar referência.'},
+ ]}},
+ {id:'usehope',nome:'Use.Hope',titulo:'Sobre os disparos no <mark>CRM da Use.Hope</mark>',lead:'O Felipe lembrou que você participou de disparos manuais no CRM da Use.Hope. Isso pode abrir vagas de apoio em CRM e campanhas, se você quiser usar.',fields:[
+  {k:'uhUsar',label:'Quer colocar isso no currículo?',kind:'one',opts:['Sim','Não','Não foi bem assim']},
+  {k:'uhPeriodo',label:'Quando foi?',ph:'De mês/ano até mês/ano',when:s=>s.uhUsar!=='Não'},
+  {k:'uhFerramenta',label:'Qual ferramenta ou sistema?',when:s=>s.uhUsar!=='Não'},
+  {k:'uhTarefas',label:'O que você fazia, passo a passo?',hint:'Só a sua parte. Se também atendia, vendia ou cuidava da base, conte aqui.',kind:'area',when:s=>s.uhUsar!=='Não'},
+  {k:'uhVolume',label:'Quantos disparos ou contatos, mais ou menos?',hint:'Por dia ou por campanha. Se não souber, deixe em branco.',when:s=>s.uhUsar!=='Não'},
+ ]},
+ {id:'form',nome:'Formação',titulo:'O que você <mark>estudou</mark>',lead:'Escola, faculdade, técnico e cursos livres. Curso pela metade também conta, é só marcar a situação.',repeat:{key:'formacoes',um:'Curso',add:'Adicionar outro curso',fields:[
+  {k:'curso',label:'Curso',ph:'Ex.: Ensino médio, Administração, Técnico em…'},
+  {k:'inst',label:'Escola ou instituição'},
+  {k:'periodo',label:'Período',ph:'Ex.: 2019 a 2022',half:1},
+  {k:'situacao',label:'Situação',kind:'one',opts:['Concluído','Cursando','Trancado','Não concluí']},
+ ]},fields:[
+  {k:'certificados',label:'Cursos livres e certificados',hint:'Nome, onde fez e o ano.',kind:'area'},
+  {k:'ingles',label:'Inglês',hint:'O nível que você consegue mostrar numa conversa.',kind:'one',opts:NIVEIS},
+  {k:'espanhol',label:'Espanhol',kind:'one',opts:NIVEIS},
+  {k:'outroIdioma',label:'Outro idioma e nível'},
+ ]},
+ {id:'hab',nome:'Habilidades',titulo:'O que você <mark>sabe usar</mark>',lead:'Marque só o que você usaria amanhã sem pedir ajuda.',fields:[
+  {k:'ferramentas',label:'Ferramentas',kind:'chips',opts:['Excel ou Planilhas Google','Word ou Google Docs','PowerPoint ou Slides','Canva','WhatsApp Business','Instagram e redes sociais','E-mail profissional','CRM','Sistema de vendas ou caixa','Sistema de estoque','Agenda e marcação de horários','Edição de fotos ou vídeos']},
+  {k:'ferramentasOutras',label:'Outras ferramentas e sistemas',ph:'Nomes dos sistemas que você já usou'},
+  {k:'praticas',label:'Na prática, você já fez',kind:'chips',opts:['Atendimento ao cliente','Vendas','Cobrança','Controle financeiro','Organização de agenda','Cadastro e digitação','Compras e estoque','Redes sociais','Treinar outra pessoa','Abrir e fechar caixa']},
+  {k:'cnh',label:'Tem CNH?',kind:'one',opts:['Não','A','B','AB']},
+ ]},
+ {id:'vagas',nome:'Vagas',titulo:'Vagas que <mark>chamaram sua atenção</mark>',lead:'Cole o texto ou o link de duas ou três vagas que você aceitaria de verdade. É com elas que o currículo aprende as palavras certas.',fields:[
+  {k:'vaga1',label:'Vaga 1',kind:'area',ph:'Cole aqui a descrição completa ou o link'},
+  {k:'vaga2',label:'Vaga 2',kind:'area'},
+  {k:'vaga3',label:'Vaga 3',kind:'area'},
+  {k:'extra',label:'Algo mais que eu preciso saber?',hint:'Um período sem trabalhar, uma mudança de área, um sonho. Tudo ajuda a contar sua história do jeito certo.',kind:'area'},
+ ]},
+ {id:'fim',nome:'Revisão'},
+];
+const KEY='quiz-curriculo-v1';
+let S={experiencias:[{}],formacoes:[{}]},step=0,db=null,queue=Promise.resolve(),dirty=false,remote='wait';
+try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&d.S){S=d.S;step=d.step||0}}catch(e){}
+const app=document.getElementById('app');
+const filled=v=>Array.isArray(v)?v.length>0:!!(v&&String(v).trim());
+
+function touch(){S._t=Date.now();dirty=true;try{localStorage.setItem(KEY,JSON.stringify({S,step}))}catch(e){}}
+function setStatus(){const el=document.getElementById('status');el.textContent=remote==='ok'?'Salvo':remote==='saving'?'Salvando…':remote==='wait'?'':'Salvo neste aparelho'}
+function push(){
+  if(!db||!dirty)return queue;dirty=false;remote='saving';setStatus();
+  const body={respostas:JSON.parse(JSON.stringify(S)),enviado:!!S._enviado,atualizadoEm:S._t||Date.now()};
+  queue=queue.then(()=>db.doc('respostas/quiz').set(body)).then(()=>{remote='ok';setStatus();return true},()=>{remote='local';dirty=true;setStatus();return false});
+  return queue;
+}
+async function connect(){
+  try{db=await window.claude?.use?.('db')||null}catch(e){db=null}
+  if(!db){remote='local';setStatus();return}
+  try{
+    const snap=await db.doc('respostas/quiz').get();
+    if(snap.exists){const d=snap.data();if(d&&d.respostas&&(d.atualizadoEm||0)>(S._t||0)){S=JSON.parse(JSON.stringify(d.respostas));S.experiencias=S.experiencias||[{}];S.formacoes=S.formacoes||[{}];render()}}
+    remote='ok';
+  }catch(e){remote='local'}
+  setStatus();
+}
+
+function field(f,o,pre){
+  if(f.when&&!f.when(o))return null;
+  const id=pre+f.k;
+  const wrap=h('div',{class:'f'+(f.half?' half':'')});
+  if(f.kind==='chips'||f.kind==='one'){
+    wrap.append(h('span',{class:'lab',id:id+'-l'},f.label));if(f.hint)wrap.append(h('p',{class:'hint'},f.hint));
+    const box=h('div',{class:'chips',role:'group','aria-labelledby':id+'-l'});
+    f.opts.forEach((op,i)=>{
+      const on=f.kind==='one'?o[f.k]===op:(o[f.k]||[]).includes(op);
+      box.append(h('button',{type:'button',class:'chip',id:id+'-'+i,'aria-pressed':on?'true':'false',onclick:()=>{
+        if(f.kind==='one')o[f.k]=o[f.k]===op?'':op;
+        else{const a=o[f.k]||[];o[f.k]=a.includes(op)?a.filter(x=>x!==op):[...a,op]}
+        touch();render(id+'-'+i);
+      }},op));
+    });
+    wrap.append(box);return wrap;
+  }
+  const inp=h(f.kind==='area'?'textarea':'input',{id,placeholder:f.ph,type:f.kind==='area'?null:(f.type||'text'),autocomplete:'off',oninput:e=>{o[f.k]=e.target.value;touch()}});
+  inp.value=o[f.k]||'';
+  wrap.append(h('label',{for:id},f.label));if(f.hint)wrap.append(h('p',{class:'hint'},f.hint));wrap.append(inp);
+  return wrap;
+}
+function go(n){step=Math.max(0,Math.min(STEPS.length-1,n));try{localStorage.setItem(KEY,JSON.stringify({S,step}))}catch(e){}push();render();window.scrollTo(0,0);const t=app.querySelector('h1');if(t)t.focus({preventScroll:true})}
+function nav(last){
+  return h('div',{class:'nav'},
+    step>0?h('button',{type:'button',class:'btn ghost',id:'voltar',onclick:()=>go(step-1)},'Voltar'):h('span'),
+    !last&&h('button',{type:'button',class:'btn',id:'seguir',onclick:()=>go(step+1)},step===0?'Começar':step===STEPS.length-2?'Revisar respostas':'Continuar'));
+}
+function lines(){
+  const out=[];
+  for(const st of STEPS){
+    const rows=[];
+    if(st.repeat)(S[st.repeat.key]||[]).forEach((it,i)=>{const r=st.repeat.fields.filter(f=>filled(it[f.k])).map(f=>[f.label,it[f.k]]);if(r.length)rows.push([st.repeat.um+' '+(i+1),null],...r)});
+    (st.fields||[]).forEach(f=>{if(filled(S[f.k])&&(!f.when||f.when(S)))rows.push([f.label,S[f.k]])});
+    if(st.fields||st.repeat)out.push({st,rows});
+  }
+  return out;
+}
+const show=v=>Array.isArray(v)?v.join(', '):String(v).trim();
+function toText(){return lines().map(({st,rows})=>'## '+st.nome+'\n'+(rows.length?rows.map(([l,v])=>v==null?'\n# '+l:'- '+l.replace(/\?$/,'')+': '+show(v)).join('\n'):'(em branco)')).join('\n\n')}
+
+function render(focusId){
+  const st=STEPS[step];app.textContent='';
+  document.getElementById('where').innerHTML='';
+  document.getElementById('where').append(h('b',{},st.nome),' · etapa '+(step+1)+' de '+STEPS.length);
+  document.getElementById('fill').style.width=(step/(STEPS.length-1)*100)+'%';
+  if(st.id==='inicio'){
+    app.append(
+      h('h1',{tabindex:'-1',html:'Vamos montar seu currículo <mark>do zero</mark>'}),
+      h('p',{class:'lead'},'São perguntas simples sobre o que você já fez e o que quer fazer. Com as respostas, o currículo sai pronto para as vagas que combinam com você.'),
+      h('ul',{class:'todo'},
+        h('li',{},'Leva uns 15 minutos. Pode parar e voltar depois, neste mesmo aparelho: suas respostas ficam salvas nele.'),
+        h('li',{},'Responda com frases curtas, do jeito que você fala.'),
+        h('li',{},'Não sabe ou não lembra? Pule. Nada aqui é obrigatório.'),
+        h('li',{},'Só entra no currículo o que for verdade e você confirmar.')),
+      nav());
+  }else if(st.id==='fim'){
+    const sent=S._enviado;
+    app.append(h('h1',{tabindex:'-1',html:'Confira e <mark>mande para o Felipe</mark>'}),
+      h('p',{class:'lead'},'Dê uma olhada no que você escreveu. Dá para voltar em qualquer parte e ajustar. Quando estiver bom, baixe o arquivo de respostas ou copie o texto.'));
+    const rev=h('div',{class:'rev'});
+    lines().forEach(({st:s,rows})=>{
+      rev.append(h('section',{},
+        h('h2',{},s.nome,h('button',{type:'button',class:'btn link',id:'ed-'+s.id,onclick:()=>go(STEPS.indexOf(s))},'Editar')),
+        rows.length?rows.map(([l,v])=>v==null?h('p',{},h('b',{},l)):h('p',{},h('span',{},l.replace(/\?$/,'')+': '),show(v))):h('p',{},h('span',{},'Em branco'))));
+    });
+    const msg=h('p',{class:'note',id:'msg',role:'status',hidden:true});
+    const out=h('textarea',{class:'out',id:'saida',readonly:true,hidden:true,'aria-label':'Suas respostas em texto'});
+    const say=t=>{msg.textContent=t;msg.hidden=false};
+    app.append(rev,msg,out,h('div',{class:'nav'},
+      h('button',{type:'button',class:'btn ghost',id:'voltar',onclick:()=>go(step-1)},'Voltar'),
+      h('button',{type:'button',class:'btn ghost',id:'copiar',onclick:()=>{
+        const t=toText();out.value=t;
+        const fb=()=>{out.hidden=false;out.focus();out.select();say('Não deu para copiar sozinho. O texto está selecionado aqui embaixo: copie e mande para o Felipe.')};
+        try{navigator.clipboard.writeText(t).then(()=>say('Copiado. Agora é só colar numa mensagem para o Felipe.'),fb)}catch(e){fb()}
+      }},'Copiar respostas'),
+      !!navigator.share&&h('button',{type:'button',class:'btn',id:'compartilhar',onclick:()=>{
+        navigator.share({title:'Respostas do currículo',text:toText()}).then(()=>say('Pronto. Se você escolheu o WhatsApp, é só confirmar o envio para o Felipe.'),()=>{});
+      }},'Enviar pelo WhatsApp'),
+      h('button',{type:'button',class:'btn'+(navigator.share?' ghost':''),id:'baixar',onclick:()=>{
+        try{
+          const url=URL.createObjectURL(new Blob([toText()],{type:'text/plain;charset=utf-8'}));
+          const a=h('a',{href:url,download:'respostas-curriculo.txt'});document.body.append(a);a.click();a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),2000);
+          say('Arquivo “respostas-curriculo.txt” baixado. Agora é só mandar esse arquivo para o Felipe.');
+        }catch(e){say('Não deu para baixar o arquivo. Toque em “Copiar respostas” e mande o texto para o Felipe.')}
+      }},'Baixar respostas')));
+  }else{
+    app.append(h('h1',{tabindex:'-1',html:st.titulo}),h('p',{class:'lead'},st.lead));
+    if(st.repeat){
+      const list=S[st.repeat.key]=S[st.repeat.key]&&S[st.repeat.key].length?S[st.repeat.key]:[{}];
+      list.forEach((it,i)=>{
+        app.append(h('div',{class:'item'},
+          h('div',{class:'item-head'},h('h2',{},st.repeat.um+' '+(i+1)),
+            list.length>1&&h('button',{type:'button',class:'btn link',id:st.repeat.key+i+'-rm',onclick:()=>{list.splice(i,1);touch();render()}},'Remover')),
+          h('div',{class:'fields'},st.repeat.fields.map(f=>field(f,it,st.repeat.key+i+'-')))));
+      });
+      app.append(h('button',{type:'button',class:'btn add',id:st.repeat.key+'-add',onclick:()=>{list.push({});touch();render();const all=app.querySelectorAll('.item');all[all.length-1].querySelector('input').focus()}},st.repeat.add));
+    }
+    if(st.fields)app.append(h('div',{class:'fields'},st.fields.map(f=>field(f,S,st.id+'-'))));
+    app.append(nav());
+  }
+  setStatus();
+  if(focusId){const el=document.getElementById(focusId);if(el)el.focus({preventScroll:true})}
+}
+
+function boot(d){if(d&&d.S){S=d.S;step=d.step||0}render();connect()}
+const hot=window.claude&&window.claude.hot;
+try{hot&&hot.snapshot&&hot.snapshot(()=>({S,step}))}catch(e){}
+if(hot&&hot.ready)hot.ready(boot);else boot((hot&&hot.data)||{});
+</script>
+</body>
+</html>
